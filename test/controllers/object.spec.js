@@ -148,7 +148,7 @@ describe('Operations on Objects', () => {
           ContentType: 'image/jpeg',
         })
         .promise()
-      const url = s3Client.getSignedUrl('getObject', {
+      const url = await s3Client.getSignedUrl('getObject', {
         Bucket: 'bucket-a',
         Key: 'image',
       })
@@ -172,7 +172,7 @@ describe('Operations on Objects', () => {
           ContentType: 'image/jpeg',
         })
         .promise()
-      const url = s3Client.getSignedUrl('getObject', {
+      const url = await s3Client.getSignedUrl('getObject', {
         Bucket: 'bucket-a',
         Key: 'image',
       })
@@ -196,7 +196,7 @@ describe('Operations on Objects', () => {
           ContentType: 'image/jpeg',
         })
         .promise()
-      const url = s3Client.getSignedUrl('getObject', {
+      const url = await s3Client.getSignedUrl('getObject', {
         Bucket: 'bucket-a',
         Key: 'image',
       })
@@ -221,7 +221,7 @@ describe('Operations on Objects', () => {
           ContentType: 'image/jpeg',
         })
         .promise()
-      const url = s3Client.getSignedUrl('getObject', {
+      const url = await s3Client.getSignedUrl('getObject', {
         Bucket: 'bucket-a',
         Key: 'image',
       })
@@ -250,7 +250,7 @@ describe('Operations on Objects', () => {
           ContentType: 'image/jpeg',
         })
         .promise()
-      const url = s3Client.getSignedUrl('getObject', {
+      const url = await s3Client.getSignedUrl('getObject', {
         Bucket: 'bucket-a',
         Key: 'image',
       })

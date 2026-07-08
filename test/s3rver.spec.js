@@ -1,4 +1,4 @@
-const AWS = require('./sdk-v2')
+const AWS = require('./sdk-v3')
 const { once } = require('node:events')
 const express = require('express')
 const FormData = require('form-data')

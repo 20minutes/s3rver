@@ -1,4 +1,4 @@
-const AWS = require('./sdk-v2')
+const AWS = require('./sdk-v3')
 const { RequestSigner } = require('aws4')
 const crypto = require('node:crypto')
 const { XMLParser } = require('fast-xml-parser')
@@ -10,15 +10,17 @@ const pMap = require('p-map').default
 
 const S3rver = require('..')
 
-const tmpDir = path.join(os.tmpdir(), 's3rver_test')
+let tmpDir = path.join(os.tmpdir(), 's3rver_test')
 
 const instances = new Set()
 
 exports.resetTmpDir = function resetTmpDir() {
   try {
-    fs.rmSync(tmpDir, { recursive: true })
-  } catch (_err) {
-    /* directory didn't exist */
+    fs.rmSync(tmpDir, { force: true, maxRetries: 5, recursive: true, retryDelay: 100 })
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      throw err
+    }
   }
   try {
     fs.mkdirSync(tmpDir, { recursive: true })
@@ -27,6 +29,10 @@ exports.resetTmpDir = function resetTmpDir() {
       throw err
     }
   }
+}
+
+exports.setTmpDir = function setTmpDir(directory) {
+  tmpDir = directory
 }
 
 exports.generateTestObjects = function generateTestObjects(s3Client, bucket, amount) {

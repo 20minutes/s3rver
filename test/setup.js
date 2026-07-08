@@ -1,17 +1,21 @@
 const os = require('node:os')
 const path = require('node:path')
+const fs = require('node:fs')
 
 const S3rver = require('..')
 
-const { resetTmpDir, instances } = require('./helpers')
+const { resetTmpDir, setTmpDir, instances } = require('./helpers')
 
 // Change the default options to be more test-friendly
-const tmpDir = path.join(os.tmpdir(), 's3rver_test')
 S3rver.defaultOptions.port = 0
 S3rver.defaultOptions.silent = true
-S3rver.defaultOptions.directory = tmpDir
 
-beforeEach(resetTmpDir)
+beforeEach(() => {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 's3rver_test-'))
+  setTmpDir(tmpDir)
+  S3rver.defaultOptions.directory = tmpDir
+  resetTmpDir()
+})
 
 afterEach(async () => {
   await Promise.all(
