@@ -1,9 +1,8 @@
 const { zip } = require('lodash')
-const moment = require('moment')
 const os = require('node:os')
 const axios = require('axios')
 
-const { createServerAndClient, parseXml } = require('../helpers')
+const { createServerAndClient, isValidDate, parseXml } = require('../helpers')
 
 describe('Virtual Host resolution', () => {
   const buckets = [{ name: 'bucket-a' }, { name: 'bucket-b' }]
@@ -43,7 +42,7 @@ describe('Virtual Host resolution', () => {
     expect(parsedBuckets).to.have.lengthOf(buckets.length)
     for (const [bucket, config] of zip(parsedBuckets, buckets)) {
       expect(bucket.Name).to.equal(config.name)
-      expect(moment(bucket.CreationDate).isValid()).to.be.true
+      expect(isValidDate(bucket.CreationDate)).to.be.true
     }
   })
 
@@ -62,7 +61,7 @@ describe('Virtual Host resolution', () => {
     expect(parsedBuckets).to.have.lengthOf(buckets.length)
     for (const [bucket, config] of zip(parsedBuckets, buckets)) {
       expect(bucket.Name).to.equal(config.name)
-      expect(moment(bucket.CreationDate).isValid()).to.be.true
+      expect(isValidDate(bucket.CreationDate)).to.be.true
     }
   })
 
@@ -80,7 +79,7 @@ describe('Virtual Host resolution', () => {
     expect(parsedBuckets).to.have.lengthOf(buckets.length)
     for (const [bucket, config] of zip(parsedBuckets, buckets)) {
       expect(bucket.Name).to.equal(config.name)
-      expect(moment(bucket.CreationDate).isValid()).to.be.true
+      expect(isValidDate(bucket.CreationDate)).to.be.true
     }
   })
 

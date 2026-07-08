@@ -1,7 +1,6 @@
 const { zip } = require('lodash')
-const moment = require('moment')
 
-const { createServerAndClient } = require('../helpers')
+const { createServerAndClient, isValidDate } = require('../helpers')
 
 describe('Operations on the Service', () => {
   describe('GET Service', () => {
@@ -22,7 +21,7 @@ describe('Operations on the Service', () => {
       expect(data.Buckets).to.have.lengthOf(6)
       for (const [bucket, config] of zip(data.Buckets, buckets)) {
         expect(bucket.Name).to.equal(config.name)
-        expect(moment(bucket.CreationDate).isValid()).to.be.true
+        expect(isValidDate(bucket.CreationDate)).to.be.true
       }
     })
   })

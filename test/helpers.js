@@ -6,7 +6,7 @@ const fs = require('node:fs')
 const { times } = require('lodash')
 const os = require('node:os')
 const path = require('node:path')
-const pMap = require('p-map')
+const pMap = require('p-map').default
 
 const S3rver = require('..')
 
@@ -43,6 +43,8 @@ exports.generateTestObjects = function generateTestObjects(s3Client, bucket, amo
 }
 
 exports.md5 = (data) => crypto.createHash('md5').update(data).digest('hex')
+
+exports.isValidDate = (value) => !Number.isNaN(new Date(value).getTime())
 
 exports.parseXml = (data) => {
   const xmlParser = new XMLParser()
