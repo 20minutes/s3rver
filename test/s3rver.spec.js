@@ -1,5 +1,4 @@
 const AWS = require('./sdk-v2')
-const { expect } = require('chai')
 const { once } = require('node:events')
 const express = require('express')
 const FormData = require('form-data')
@@ -89,7 +88,7 @@ describe('S3rver', () => {
       } finally {
         await server.close()
       }
-      await expect(server.store.listBuckets()).to.eventually.have.lengthOf(0)
+      await expect(server.store.listBuckets()).resolves.toHaveLength(0)
     })
 
     it('does not clean up after close if the resetOnClose setting is false', async () => {
@@ -112,7 +111,7 @@ describe('S3rver', () => {
       } finally {
         await server.close()
       }
-      await expect(server.store.listBuckets()).to.eventually.have.lengthOf(1)
+      await expect(server.store.listBuckets()).resolves.toHaveLength(1)
     })
 
     it('does not clean up after close if the resetOnClose setting is not set', async () => {
@@ -134,7 +133,7 @@ describe('S3rver', () => {
       } finally {
         await server.close()
       }
-      await expect(server.store.listBuckets()).to.eventually.have.lengthOf(1)
+      await expect(server.store.listBuckets()).resolves.toHaveLength(1)
     })
   })
 

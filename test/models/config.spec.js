@@ -1,5 +1,3 @@
-const { expect } = require('chai')
-
 const { S3WebsiteConfiguration } = require('../../lib/models/config')
 
 describe('S3WebsiteConfiguration', () => {

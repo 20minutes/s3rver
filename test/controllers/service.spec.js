@@ -1,4 +1,3 @@
-const { expect } = require('chai')
 const { zip } = require('lodash')
 const moment = require('moment')
 

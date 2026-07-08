@@ -1,4 +1,3 @@
-const { expect } = require('chai')
 const fs = require('node:fs')
 const { find } = require('lodash')
 
@@ -165,17 +164,15 @@ describe('Operations on Buckets', () => {
       expect(data.Contents[0]).to.have.property('Key', 'akey3')
     })
 
-    it('lists 100 objects without returning the next marker', async function () {
-      this.timeout(30000)
+    it('lists 100 objects without returning the next marker', async () => {
       await generateTestObjects(s3Client, 'bucket-a', 200)
       const data = await s3Client.listObjects({ Bucket: 'bucket-a', MaxKeys: 100 }).promise()
       expect(data.IsTruncated).to.be.true
       expect(data.Contents).to.have.lengthOf(100)
       expect(data.NextMarker).to.not.exist
-    })
+    }, 30000)
 
-    it('lists 100 delimited objects and return the next marker', async function () {
-      this.timeout(30000)
+    it('lists 100 delimited objects and return the next marker', async () => {
       await generateTestObjects(s3Client, 'bucket-a', 200)
       const data = await s3Client
         .listObjects({
@@ -187,7 +184,7 @@ describe('Operations on Buckets', () => {
       expect(data.IsTruncated).to.be.true
       expect(data.Contents).to.have.lengthOf(100)
       expect(data.NextMarker).to.equal('key099')
-    })
+    }, 30000)
 
     it('lists no objects for a bucket', async () => {
       await s3Client.listObjects({ Bucket: 'bucket-a' }).promise()
@@ -326,8 +323,7 @@ describe('Operations on Buckets', () => {
       expect(data.CommonPrefixes[2]).to.have.property('Prefix', 'folder1/folder4/')
     })
 
-    it('truncates a listing to 500 objects', async function () {
-      this.timeout(30000)
+    it('truncates a listing to 500 objects', async (ctx) => {
       await generateTestObjects(s3Client, 'bucket-a', 1000)
       let data
       try {
@@ -335,13 +331,13 @@ describe('Operations on Buckets', () => {
       } catch (e) {
         // mosty happen in node 18 with the error "EMFILE: too many open files"
         if (e.code === 'InternalError') {
-          this.skip()
+          ctx.skip()
         }
       }
       expect(data.IsTruncated).to.be.true
       expect(data.KeyCount).to.equal(500)
       expect(data.Contents).to.have.lengthOf(500)
-    })
+    }, 30000)
 
     it('reports no truncation when setting max keys to 0', async () => {
       await generateTestObjects(s3Client, 'bucket-a', 100)
@@ -351,8 +347,7 @@ describe('Operations on Buckets', () => {
       expect(data.Contents).to.have.lengthOf(0)
     })
 
-    it('lists at most 1000 objects', async function () {
-      this.timeout(30000)
+    it('lists at most 1000 objects', async (ctx) => {
       await generateTestObjects(s3Client, 'bucket-a', 1100)
       let data
       try {
@@ -360,17 +355,16 @@ describe('Operations on Buckets', () => {
       } catch (e) {
         // mosty happen in node 18 with the error "EMFILE: too many open files"
         if (e.code === 'InternalError') {
-          this.skip()
+          ctx.skip()
         }
       }
       expect(data.IsTruncated).to.be.true
       expect(data.MaxKeys).to.equal(1100)
       expect(data.Contents).to.have.lengthOf(1000)
       expect(data.KeyCount).to.equal(1000)
-    })
+    }, 30000)
 
-    it('lists 100 objects and return a continuation token', async function () {
-      this.timeout(30000)
+    it('lists 100 objects and return a continuation token', async (ctx) => {
       await generateTestObjects(s3Client, 'bucket-a', 200)
       let data
       try {
@@ -378,17 +372,16 @@ describe('Operations on Buckets', () => {
       } catch (e) {
         // mosty happen in node 18 with the error "EMFILE: too many open files"
         if (e.code === 'InternalError') {
-          this.skip()
+          ctx.skip()
         }
       }
       expect(data.IsTruncated).to.be.true
       expect(data.Contents).to.have.lengthOf(100)
       expect(data.KeyCount).to.equal(100)
       expect(data.NextContinuationToken).to.exist
-    })
+    }, 30000)
 
-    it('lists additional objects using a continuation token', async function () {
-      this.timeout(30000)
+    it('lists additional objects using a continuation token', async (ctx) => {
       await generateTestObjects(s3Client, 'bucket-a', 500)
       let data
       try {
@@ -396,7 +389,7 @@ describe('Operations on Buckets', () => {
       } catch (e) {
         // mosty happen in node 18 with the error "EMFILE: too many open files"
         if (e.code === 'InternalError') {
-          this.skip()
+          ctx.skip()
         }
       }
       expect(data.IsTruncated).to.be.true
@@ -411,10 +404,8 @@ describe('Operations on Buckets', () => {
       expect(nextData.Contents).to.have.lengthOf(100)
       expect(nextData.ContinuationToken).to.equal(data.NextContinuationToken)
       expect(nextData.NextContinuationToken).to.not.exist
-    })
+    }, 30000)
   })
-
-  describe('GET Bucket cors', () => {})
 
   describe('GET Bucket location', () => {
     it('returns default bucket location', async () => {
@@ -426,8 +417,6 @@ describe('Operations on Buckets', () => {
       expect(location).to.have.property('LocationConstraint', '')
     })
   })
-
-  describe('GET Bucket website', () => {})
 
   describe('PUT Bucket', () => {
     it('creates a bucket with valid domain-style name', async () => {
