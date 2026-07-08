@@ -6,7 +6,6 @@ logs
 pids
 *.pid
 *.seed
-.eslintcache
 
 # Coverage directory used by tools like istanbul
 .nyc_output/

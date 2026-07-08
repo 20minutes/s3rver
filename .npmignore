@@ -1,9 +1,6 @@
 .github
 .husky
 test
-.eslintrc
-.eslintignore
+biome.jsonc
 .gitignore
 .mocharc.json
-.prettierignore
-.prettierrc
