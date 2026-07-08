@@ -1,4 +1,3 @@
-const { expect } = require('chai')
 const { once } = require('node:events')
 const express = require('express')
 const FormData = require('form-data')
@@ -49,15 +48,14 @@ describe('Operations on Objects', () => {
       await s3Client.deleteObject({ Bucket: 'bucket-a', Key: 'large' }).promise()
     })
 
-    it('deletes 500 objects with deleteObjects', async function () {
-      this.timeout(30000)
+    it('deletes 500 objects with deleteObjects', async () => {
       await generateTestObjects(s3Client, 'bucket-a', 500)
       const deleteObj = { Objects: times(500, (i) => ({ Key: `key${i}` })) }
       const data = await s3Client.deleteObjects({ Bucket: 'bucket-a', Delete: deleteObj }).promise()
       expect(data.Deleted).to.exist
       expect(data.Deleted).to.have.lengthOf(500)
       expect(find(data.Deleted, { Key: 'key67' })).to.exist
-    })
+    }, 30000)
 
     it('reports invalid XML when using deleteObjects with zero objects', async () => {
       let error
@@ -85,15 +83,14 @@ describe('Operations on Objects', () => {
   })
 
   describe('DELETE Object', () => {
-    it('deletes 500 objects', async function () {
-      this.timeout(30000)
+    it('deletes 500 objects', async () => {
       await generateTestObjects(s3Client, 'bucket-a', 500)
       await pMap(
         times(500),
         (i) => s3Client.deleteObject({ Bucket: 'bucket-a', Key: `key${i}` }).promise(),
         { concurrency: 100 }
       )
-    })
+    }, 30000)
 
     it('deletes a nonexistent object from a bucket', async () => {
       await s3Client.deleteObject({ Bucket: 'bucket-a', Key: 'doesnotexist' }).promise()
@@ -333,7 +330,7 @@ describe('Operations on Objects', () => {
             Key: 'text',
           })
           .promise()
-      ).to.eventually.be.rejectedWith('The specified key does not exist.')
+      ).rejects.toThrow('The specified key does not exist.')
     })
 
     it('returns an empty tag set for an untagged object', async () => {
@@ -1325,7 +1322,7 @@ describe('Operations on Objects', () => {
             Tagging: { TagSet: [{ Key: 'Test', Value: 'true' }] },
           })
           .promise()
-      ).to.eventually.be.rejectedWith('The specified key does not exist.')
+      ).rejects.toThrow('The specified key does not exist.')
     })
   })
 

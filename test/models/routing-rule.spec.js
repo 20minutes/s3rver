@@ -1,5 +1,3 @@
-const { expect } = require('chai')
-
 const RoutingRule = require('../../lib/models/routing-rule')
 
 describe('RoutingRule', () => {

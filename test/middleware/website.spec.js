@@ -1,10 +1,9 @@
-const { expect } = require('chai')
 const fs = require('node:fs')
 const axios = require('axios')
 
 const { createServerAndClient } = require('../helpers')
 
-describe('Static Website Tests', function () {
+describe('Static Website Tests', () => {
   let s3Client
   const buckets = [
     // a bucket with no additional config
@@ -37,7 +36,7 @@ describe('Static Website Tests', function () {
     },
   ]
 
-  this.beforeEach(async () => {
+  beforeEach(async () => {
     ;({ s3Client } = await createServerAndClient({
       configureBuckets: buckets,
     }))

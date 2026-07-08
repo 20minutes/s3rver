@@ -1,5 +1,4 @@
 const AWS = require('../sdk-v2')
-const { expect } = require('chai')
 const fs = require('node:fs')
 const axios = require('axios')
 
