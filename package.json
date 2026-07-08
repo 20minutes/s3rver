@@ -51,7 +51,7 @@
   "dependencies": {
     "@koa/router": "^13.1.1",
     "busboy": "^1.6.0",
-    "commander": "^14.0.3",
+    "commander": "^15.0.0",
     "fast-xml-parser": "^5.9.3",
     "he": "^1.2.0",
     "koa": "^2.16.4",
