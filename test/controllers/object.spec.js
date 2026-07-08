@@ -4,14 +4,14 @@ const FormData = require('form-data')
 const fs = require('node:fs')
 const http = require('node:http')
 const { find, times } = require('lodash')
-const moment = require('moment')
-const pMap = require('p-map')
+const pMap = require('p-map').default
 const { URL, URLSearchParams } = require('node:url')
 const axios = require('axios')
 
 const {
   createServerAndClient,
   generateTestObjects,
+  isValidDate,
   md5,
   parseXml,
   StreamingRequestSigner,
@@ -1097,7 +1097,7 @@ describe('Operations on Objects', () => {
         })
         .promise()
       expect(copyResult.ETag).to.equal(data.ETag)
-      expect(moment(copyResult.LastModified).isValid()).to.be.true
+      expect(isValidDate(copyResult.LastModified)).to.be.true
       const object = await s3Client
         .getObject({
           Bucket: 'bucket-b',
@@ -1160,7 +1160,7 @@ describe('Operations on Objects', () => {
         })
         .promise()
       expect(copyResult.ETag).to.equal(data.ETag)
-      expect(moment(copyResult.LastModified).isValid()).to.be.true
+      expect(isValidDate(copyResult.LastModified)).to.be.true
     })
 
     it('copies an image object into another bucket and update its metadata', async () => {
