@@ -1,79 +1,73 @@
-'use strict';
+const { expect } = require('chai')
+const express = require('express')
+const fs = require('node:fs')
+const { URL } = require('node:url')
+const axios = require('axios')
 
-const { expect } = require('chai');
-const express = require('express');
-const fs = require('fs');
-const { URL } = require('url');
-const axios = require('axios');
+const { toISO8601String } = require('../../lib/utils')
 
-const { toISO8601String } = require('../../lib/utils');
-
-const { createServerAndClient } = require('../helpers');
+const { createServerAndClient } = require('../helpers')
 
 describe('REST Authentication', () => {
-  let s3rver;
-  let s3Client;
+  let s3rver
+  let s3Client
   const buckets = [
     {
       name: 'bucket-a',
     },
-  ];
+  ]
 
-  beforeEach(async function () {
-    ({ s3rver, s3Client } = await createServerAndClient({
+  beforeEach(async () => {
+    ;({ s3rver, s3Client } = await createServerAndClient({
       configureBuckets: buckets,
-    }));
-  });
+    }))
+  })
 
-  it('can GET a signed URL with subdomain bucket', async function () {
-    await s3Client
-      .putObject({ Bucket: 'bucket-a', Key: 'text', Body: 'Hello!' })
-      .promise();
-    const endpointHref = s3Client.endpoint.href;
-    s3Client.setEndpoint(`https://s3.amazonaws.com`);
+  it('can GET a signed URL with subdomain bucket', async () => {
+    await s3Client.putObject({ Bucket: 'bucket-a', Key: 'text', Body: 'Hello!' }).promise()
+    const endpointHref = s3Client.endpoint.href
+    s3Client.setEndpoint(`https://s3.amazonaws.com`)
     Object.assign(s3Client.config, {
       s3ForcePathStyle: false,
-    });
+    })
     const url = s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'text',
-    });
-    const { host, pathname, searchParams } = new URL(url);
+    })
+    const { host, pathname, searchParams } = new URL(url)
     const res = await axios({
       url: new URL(pathname, endpointHref),
       data: searchParams,
       headers: { host },
-    });
-    expect(res.data).to.equal('Hello!');
-  });
+    })
+    expect(res.data).to.equal('Hello!')
+  })
 
-  it('can GET a signed URL with vhost bucket', async function () {
-    await s3Client
-      .putObject({ Bucket: 'bucket-a', Key: 'text', Body: 'Hello!' })
-      .promise();
-    const endpointHref = s3Client.endpoint.href;
+  it('can GET a signed URL with vhost bucket', async () => {
+    await s3Client.putObject({ Bucket: 'bucket-a', Key: 'text', Body: 'Hello!' }).promise()
+    const endpointHref = s3Client.endpoint.href
     s3Client.setEndpoint(
-      `${s3Client.endpoint.protocol}//bucket-a:${s3Client.endpoint.port}${s3Client.endpoint.path}`,
-    );
+      `${s3Client.endpoint.protocol}//bucket-a:${s3Client.endpoint.port}${s3Client.endpoint.path}`
+    )
     Object.assign(s3Client.config, {
       s3ForcePathStyle: false,
       s3BucketEndpoint: true,
-    });
+    })
     const url = s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'text',
-    });
-    const { host, pathname, searchParams } = new URL(url);
+    })
+    const { host, pathname, searchParams } = new URL(url)
     const res = await axios({
       url: new URL(pathname, endpointHref),
       data: searchParams,
       headers: { host },
-    });
-    expect(res.data).to.equal('Hello!');
-  });
+    })
+    expect(res.data).to.equal('Hello!')
+  })
 
-  it('rejects a request specifying multiple auth mechanisms', async function () {
-    let res;
+  it('rejects a request specifying multiple auth mechanisms', async () => {
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
@@ -85,16 +79,16 @@ describe('REST Authentication', () => {
         headers: {
           Authorization: 'AWS S3RVER:dummysig',
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(400);
-    expect(res.data).to.contain('<Code>InvalidArgument</Code>');
-  });
+    expect(res.status).to.equal(400)
+    expect(res.data).to.contain('<Code>InvalidArgument</Code>')
+  })
 
-  it('rejects a request with an invalid authorization header [v2]', async function () {
-    let res;
+  it('rejects a request with an invalid authorization header [v2]', async () => {
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
@@ -102,36 +96,35 @@ describe('REST Authentication', () => {
         headers: {
           Authorization: 'AWS S3RVER dummysig',
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(400);
-    expect(res.data).to.contain('<Code>InvalidArgument</Code>');
-  });
+    expect(res.status).to.equal(400)
+    expect(res.data).to.contain('<Code>InvalidArgument</Code>')
+  })
 
-  it('rejects a request with an invalid authorization header [v4]', async function () {
-    let res;
+  it('rejects a request with an invalid authorization header [v4]', async () => {
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
         baseURL: s3Client.endpoint.href,
         headers: {
           // omitting Signature and SignedHeaders components
-          Authorization:
-            'AWS4-HMAC-SHA256 Credential=S3RVER/20060301/us-east-1/s3/aws4_request',
+          Authorization: 'AWS4-HMAC-SHA256 Credential=S3RVER/20060301/us-east-1/s3/aws4_request',
           'X-Amz-Content-SHA256': 'UNSIGNED-PAYLOAD',
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(400);
-    expect(res.data).to.contain('<Code>AuthorizationHeaderMalformed</Code>');
-  });
+    expect(res.status).to.equal(400)
+    expect(res.data).to.contain('<Code>AuthorizationHeaderMalformed</Code>')
+  })
 
-  it('rejects a request with invalid query params [v2]', async function () {
-    let res;
+  it('rejects a request with invalid query params [v2]', async () => {
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
@@ -141,16 +134,16 @@ describe('REST Authentication', () => {
           Signature: 'dummysig',
           // expiration is omitted
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(403);
-    expect(res.data).to.contain('<Code>AccessDenied</Code>');
-  });
+    expect(res.status).to.equal(403)
+    expect(res.data).to.contain('<Code>AccessDenied</Code>')
+  })
 
-  it('rejects a request with invalid query params [v4]', async function () {
-    let res;
+  it('rejects a request with invalid query params [v4]', async () => {
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
@@ -160,18 +153,16 @@ describe('REST Authentication', () => {
           'X-Amz-Signature': 'dummysig',
           // omitting most other parameters for sig v4
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(400);
-    expect(res.data).to.contain(
-      '<Code>AuthorizationQueryParametersError</Code>',
-    );
-  });
+    expect(res.status).to.equal(400)
+    expect(res.data).to.contain('<Code>AuthorizationQueryParametersError</Code>')
+  })
 
-  it('rejects a request with an incorrect signature in header [v2]', async function () {
-    let res;
+  it('rejects a request with an incorrect signature in header [v2]', async () => {
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
@@ -180,16 +171,16 @@ describe('REST Authentication', () => {
           Authorization: 'AWS S3RVER:badsig',
           'X-Amz-Date': new Date().toUTCString(),
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(403);
-    expect(res.data).to.contain('<Code>SignatureDoesNotMatch</Code>');
-  });
+    expect(res.status).to.equal(403)
+    expect(res.data).to.contain('<Code>SignatureDoesNotMatch</Code>')
+  })
 
-  it('rejects a request with an incorrect signature in query params [v2]', async function () {
-    let res;
+  it('rejects a request with an incorrect signature in query params [v2]', async () => {
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
@@ -199,16 +190,16 @@ describe('REST Authentication', () => {
           Signature: 'badsig',
           Expires: (Date.now() / 1000).toFixed() + 900,
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(403);
-    expect(res.data).to.contain('<Code>SignatureDoesNotMatch</Code>');
-  });
+    expect(res.status).to.equal(403)
+    expect(res.data).to.contain('<Code>SignatureDoesNotMatch</Code>')
+  })
 
-  it('rejects a request with a large time skew', async function () {
-    let res;
+  it('rejects a request with a large time skew', async () => {
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
@@ -218,52 +209,52 @@ describe('REST Authentication', () => {
           // 20 minutes in the future
           'X-Amz-Date': new Date(Date.now() + 20000 * 60).toUTCString(),
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(403);
-    expect(res.data).to.contain('<Code>RequestTimeTooSkewed</Code>');
-  });
+    expect(res.status).to.equal(403)
+    expect(res.data).to.contain('<Code>RequestTimeTooSkewed</Code>')
+  })
 
-  it('rejects an expired presigned request [v2]', async function () {
-    s3Client.config.set('signatureVersion', 's3');
+  it('rejects an expired presigned request [v2]', async () => {
+    s3Client.config.set('signatureVersion', 's3')
     const url = s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'mykey',
       Expires: -10, // 10 seconds in the past
-    });
-    let res;
+    })
+    let res
     try {
-      res = await axios(url);
+      res = await axios(url)
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(403);
-    expect(res.data).to.contain('<Code>AccessDenied</Code>');
-  });
+    expect(res.status).to.equal(403)
+    expect(res.data).to.contain('<Code>AccessDenied</Code>')
+  })
 
-  it('rejects an expired presigned request [v4]', async function () {
-    s3Client.config.set('signatureVersion', 'v4');
+  it('rejects an expired presigned request [v4]', async () => {
+    s3Client.config.set('signatureVersion', 'v4')
     const url = s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'mykey',
       Expires: -10, // 10 seconds in the past
-    });
-    let res;
+    })
+    let res
     try {
-      res = await axios(url);
+      res = await axios(url)
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(403);
-    expect(res.data).to.contain('<Code>AccessDenied</Code>');
-  });
+    expect(res.status).to.equal(403)
+    expect(res.data).to.contain('<Code>AccessDenied</Code>')
+  })
 
-  it('rejects a presigned request with an invalid expiration [v4]', async function () {
+  it('rejects a presigned request with an invalid expiration [v4]', async () => {
     // aws-sdk unfortunately doesn't expose a way to set the timestamp of the request to presign
     // so we have to construct a mostly-valid request ourselves
-    let res;
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
@@ -277,135 +268,127 @@ describe('REST Authentication', () => {
           'X-Amz-Date': toISO8601String(Date.now() - 20000 * 60),
           'X-Amz-Expires': 20,
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(403);
-    expect(res.data).to.contain('<Code>AccessDenied</Code>');
-  });
+    expect(res.status).to.equal(403)
+    expect(res.data).to.contain('<Code>AccessDenied</Code>')
+  })
 
-  it('overrides response headers in signed GET requests', async function () {
+  it('overrides response headers in signed GET requests', async () => {
     await s3Client
       .putObject({
         Bucket: 'bucket-a',
         Key: 'image',
-        Body: await fs.promises.readFile(
-          require.resolve('../fixtures/image0.jpg'),
-        ),
+        Body: await fs.promises.readFile(require.resolve('../fixtures/image0.jpg')),
       })
-      .promise();
+      .promise()
     const url = s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'image',
       ResponseContentType: 'image/jpeg',
       ResponseContentDisposition: 'attachment',
-    });
-    const res = await axios(url);
-    expect(res.headers['content-type']).to.equal('image/jpeg');
-    expect(res.headers['content-disposition']).to.equal('attachment');
-  });
+    })
+    const res = await axios(url)
+    expect(res.headers['content-type']).to.equal('image/jpeg')
+    expect(res.headers['content-disposition']).to.equal('attachment')
+  })
 
-  it('rejects anonymous requests with response header overrides in GET requests', async function () {
+  it('rejects anonymous requests with response header overrides in GET requests', async () => {
     await s3Client
       .putObject({
         Bucket: 'bucket-a',
         Key: 'image',
-        Body: await fs.promises.readFile(
-          require.resolve('../fixtures/image0.jpg'),
-        ),
+        Body: await fs.promises.readFile(require.resolve('../fixtures/image0.jpg')),
       })
-      .promise();
-    let res;
+      .promise()
+    let res
     try {
       res = await axios('bucket-a/image', {
         baseURL: s3Client.endpoint.href,
         params: {
           'response-content-type': 'image/jpeg',
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(400);
-    expect(res.data).to.contain('<Code>InvalidRequest</Code>');
-  });
+    expect(res.status).to.equal(400)
+    expect(res.data).to.contain('<Code>InvalidRequest</Code>')
+  })
 
-  it('adds x-amz-meta-* metadata specified via query parameters', async function () {
+  it('adds x-amz-meta-* metadata specified via query parameters', async () => {
     const url = s3Client.getSignedUrl('putObject', {
       Bucket: 'bucket-a',
       Key: 'mykey',
       Metadata: {
         somekey: 'value',
       },
-    });
-    await axios.put(url, { data: 'Hello!' });
+    })
+    await axios.put(url, { data: 'Hello!' })
     const object = await s3Client
       .headObject({
         Bucket: 'bucket-a',
         Key: 'mykey',
       })
-      .promise();
-    expect(object.Metadata).to.have.property('somekey', 'value');
-  });
+      .promise()
+    expect(object.Metadata).to.have.property('somekey', 'value')
+  })
 
-  it('can use signed URLs while mounted on a subpath', async function () {
-    const app = express();
-    app.use('/basepath', s3rver.getMiddleware());
+  it('can use signed URLs while mounted on a subpath', async () => {
+    const app = express()
+    app.use('/basepath', s3rver.getMiddleware())
 
-    const { httpServer } = s3rver;
-    httpServer.removeAllListeners('request');
-    httpServer.on('request', app);
+    const { httpServer } = s3rver
+    httpServer.removeAllListeners('request')
+    httpServer.on('request', app)
     s3Client.setEndpoint(
-      `${s3Client.endpoint.protocol}//localhost:${s3Client.endpoint.port}/basepath`,
-    );
+      `${s3Client.endpoint.protocol}//localhost:${s3Client.endpoint.port}/basepath`
+    )
 
-    await s3Client
-      .putObject({ Bucket: 'bucket-a', Key: 'text', Body: 'Hello!' })
-      .promise();
+    await s3Client.putObject({ Bucket: 'bucket-a', Key: 'text', Body: 'Hello!' }).promise()
     const url = s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'text',
-    });
-    const res = await axios(url);
-    expect(res.data).to.equal('Hello!');
-  });
+    })
+    const res = await axios(url)
+    expect(res.data).to.equal('Hello!')
+  })
 
-  it('can use signed vhost URLs while mounted on a subpath', async function () {
-    await s3Client
-      .putObject({ Bucket: 'bucket-a', Key: 'text', Body: 'Hello!' })
-      .promise();
+  it('can use signed vhost URLs while mounted on a subpath', async () => {
+    await s3Client.putObject({ Bucket: 'bucket-a', Key: 'text', Body: 'Hello!' }).promise()
 
-    const app = express();
-    app.use('/basepath', s3rver.getMiddleware());
+    const app = express()
+    app.use('/basepath', s3rver.getMiddleware())
 
-    const { httpServer } = s3rver;
-    httpServer.removeAllListeners('request');
-    httpServer.on('request', app);
+    const { httpServer } = s3rver
+    httpServer.removeAllListeners('request')
+    httpServer.on('request', app)
 
-    const endpointHref = s3Client.endpoint.href;
+    const endpointHref = s3Client.endpoint.href
     s3Client.setEndpoint(
-      `${s3Client.endpoint.protocol}//bucket-a:${s3Client.endpoint.port}/basepath`,
-    );
+      `${s3Client.endpoint.protocol}//bucket-a:${s3Client.endpoint.port}/basepath`
+    )
     Object.assign(s3Client.config, {
       s3ForcePathStyle: false,
       s3BucketEndpoint: true,
-    });
+    })
     const url = s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'text',
-    });
-    const { host, pathname, searchParams } = new URL(url);
+    })
+    const { host, pathname, searchParams } = new URL(url)
     const res = await axios({
       url: new URL(pathname, endpointHref),
       data: searchParams,
       headers: { host },
-    });
-    expect(res.data).to.equal('Hello!');
-  });
+    })
+    expect(res.data).to.equal('Hello!')
+  })
 
-  it('rejects a request with an incorrect signature in header [v4]', async function () {
-    let res;
+  it('rejects a request with an incorrect signature in header [v4]', async () => {
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
@@ -416,16 +399,16 @@ describe('REST Authentication', () => {
           'X-Amz-Content-SHA256': 'UNSIGNED-PAYLOAD',
           'X-Amz-Date': toISO8601String(Date.now()),
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(403);
-    expect(res.data).to.contain('<Code>SignatureDoesNotMatch</Code>');
-  });
+    expect(res.status).to.equal(403)
+    expect(res.data).to.contain('<Code>SignatureDoesNotMatch</Code>')
+  })
 
-  it('rejects a request with an incorrect signature in query params [v4]', async function () {
-    let res;
+  it('rejects a request with an incorrect signature in query params [v4]', async () => {
+    let res
     try {
       res = await axios({
         url: 'bucket-a/mykey',
@@ -438,11 +421,11 @@ describe('REST Authentication', () => {
           'X-Amz-SignedHeaders': 'host',
           'X-Amz-Signature': 'badsig',
         },
-      });
+      })
     } catch (err) {
-      res = err.response;
+      res = err.response
     }
-    expect(res.status).to.equal(403);
-    expect(res.data).to.contain('<Code>SignatureDoesNotMatch</Code>');
-  });
-});
+    expect(res.status).to.equal(403)
+    expect(res.data).to.contain('<Code>SignatureDoesNotMatch</Code>')
+  })
+})

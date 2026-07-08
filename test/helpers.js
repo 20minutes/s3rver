@@ -1,65 +1,59 @@
-'use strict';
+const AWS = require('./sdk-v2')
+const { RequestSigner } = require('aws4')
+const crypto = require('node:crypto')
+const { XMLParser } = require('fast-xml-parser')
+const fs = require('node:fs')
+const { times } = require('lodash')
+const os = require('node:os')
+const path = require('node:path')
+const pMap = require('p-map')
 
-const AWS = require('./sdk-v2');
-const { RequestSigner } = require('aws4');
-const crypto = require('crypto');
-const { XMLParser } = require('fast-xml-parser');
-const fs = require('fs');
-const { times } = require('lodash');
-const os = require('os');
-const path = require('path');
-const pMap = require('p-map');
+const S3rver = require('..')
 
-const S3rver = require('..');
+const tmpDir = path.join(os.tmpdir(), 's3rver_test')
 
-const tmpDir = path.join(os.tmpdir(), 's3rver_test');
-
-const instances = new Set();
+const instances = new Set()
 
 exports.resetTmpDir = function resetTmpDir() {
   try {
-    fs.rmSync(tmpDir, { recursive: true });
-  } catch (err) {
+    fs.rmSync(tmpDir, { recursive: true })
+  } catch (_err) {
     /* directory didn't exist */
   }
   try {
-    fs.mkdirSync(tmpDir, { recursive: true });
+    fs.mkdirSync(tmpDir, { recursive: true })
   } catch (err) {
     if (err.code !== 'EEXIST') {
-      throw err;
+      throw err
     }
   }
-};
+}
 
-exports.generateTestObjects = function generateTestObjects(
-  s3Client,
-  bucket,
-  amount,
-) {
-  const padding = amount.toString().length;
+exports.generateTestObjects = function generateTestObjects(s3Client, bucket, amount) {
+  const padding = amount.toString().length
   const objects = times(amount, (i) => ({
     Bucket: bucket,
-    Key: 'key' + i.toString().padStart(padding, '0'),
+    Key: `key${i.toString().padStart(padding, '0')}`,
     Body: 'Hello!',
-  }));
+  }))
 
   return pMap(objects, (object) => s3Client.putObject(object).promise(), {
     concurrency: 100,
-  });
-};
+  })
+}
 
-exports.md5 = (data) => crypto.createHash('md5').update(data).digest('hex');
+exports.md5 = (data) => crypto.createHash('md5').update(data).digest('hex')
 
 exports.parseXml = (data) => {
-  const xmlParser = new XMLParser();
+  const xmlParser = new XMLParser()
 
-  return xmlParser.parse(data);
-};
+  return xmlParser.parse(data)
+}
 
 exports.createServerAndClient = async function createServerAndClient(options) {
-  const s3rver = new S3rver(options);
-  const { port } = await s3rver.run();
-  instances.add(s3rver);
+  const s3rver = new S3rver(options)
+  const { port } = await s3rver.run()
+  instances.add(s3rver)
 
   const s3Client = new AWS.S3({
     accessKeyId: 'S3RVER',
@@ -68,35 +62,34 @@ exports.createServerAndClient = async function createServerAndClient(options) {
     sslEnabled: false,
     s3ForcePathStyle: true,
     signatureVersion: 'v4',
-  });
+  })
 
-  return { s3rver, s3Client };
-};
+  return { s3rver, s3Client }
+}
 
-exports.instances = instances;
+exports.instances = instances
 
 exports.StreamingRequestSigner = class extends RequestSigner {
   prepareRequest() {
-    this.request.headers['X-Amz-Content-Sha256'] =
-      'STREAMING-AWS4-HMAC-SHA256-PAYLOAD';
-    return super.prepareRequest();
+    this.request.headers['X-Amz-Content-Sha256'] = 'STREAMING-AWS4-HMAC-SHA256-PAYLOAD'
+    return super.prepareRequest()
   }
 
   signature() {
-    this.previousSignature = super.signature();
-    this.chunkData = undefined;
-    return this.previousSignature;
+    this.previousSignature = super.signature()
+    this.chunkData = undefined
+    return this.previousSignature
   }
 
   signChunk(chunkData) {
-    this.chunkData = chunkData;
-    const chunkLengthHex = chunkData.length.toString(16);
-    return `${chunkLengthHex};chunk-signature=${this.signature()}`;
+    this.chunkData = chunkData
+    const chunkLengthHex = chunkData.length.toString(16)
+    return `${chunkLengthHex};chunk-signature=${this.signature()}`
   }
 
   stringToSign() {
     const hash = (string, encoding) =>
-      crypto.createHash('sha256').update(string, 'utf8').digest(encoding);
+      crypto.createHash('sha256').update(string, 'utf8').digest(encoding)
 
     return this.chunkData === undefined
       ? super.stringToSign()
@@ -107,6 +100,6 @@ exports.StreamingRequestSigner = class extends RequestSigner {
           this.previousSignature,
           hash('', 'hex'),
           hash(this.chunkData, 'hex'),
-        ].join('\n');
+        ].join('\n')
   }
-};
+}
