@@ -29,7 +29,7 @@ describe('REST Authentication', () => {
     Object.assign(s3Client.config, {
       s3ForcePathStyle: false,
     })
-    const url = s3Client.getSignedUrl('getObject', {
+    const url = await s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'text',
     })
@@ -52,7 +52,7 @@ describe('REST Authentication', () => {
       s3ForcePathStyle: false,
       s3BucketEndpoint: true,
     })
-    const url = s3Client.getSignedUrl('getObject', {
+    const url = await s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'text',
     })
@@ -217,15 +217,17 @@ describe('REST Authentication', () => {
   })
 
   it('rejects an expired presigned request [v2]', async () => {
-    s3Client.config.set('signatureVersion', 's3')
-    const url = s3Client.getSignedUrl('getObject', {
-      Bucket: 'bucket-a',
-      Key: 'mykey',
-      Expires: -10, // 10 seconds in the past
-    })
     let res
     try {
-      res = await axios(url)
+      res = await axios({
+        url: 'bucket-a/mykey',
+        baseURL: s3Client.endpoint.href,
+        params: {
+          AWSAccessKeyId: 'S3RVER',
+          Expires: Math.floor(Date.now() / 1000) - 10,
+          Signature: 'dummysig',
+        },
+      })
     } catch (err) {
       res = err.response
     }
@@ -234,15 +236,20 @@ describe('REST Authentication', () => {
   })
 
   it('rejects an expired presigned request [v4]', async () => {
-    s3Client.config.set('signatureVersion', 'v4')
-    const url = s3Client.getSignedUrl('getObject', {
-      Bucket: 'bucket-a',
-      Key: 'mykey',
-      Expires: -10, // 10 seconds in the past
-    })
     let res
     try {
-      res = await axios(url)
+      res = await axios({
+        url: 'bucket-a/mykey',
+        baseURL: s3Client.endpoint.href,
+        params: {
+          'X-Amz-Algorithm': 'AWS4-HMAC-SHA256',
+          'X-Amz-Credential': 'S3RVER/20060301/us-east-1/s3/aws4_request',
+          'X-Amz-SignedHeaders': 'host',
+          'X-Amz-Signature': 'dummysig',
+          'X-Amz-Date': toISO8601String(Date.now() - 20000 * 60),
+          'X-Amz-Expires': 20,
+        },
+      })
     } catch (err) {
       res = err.response
     }
@@ -251,8 +258,7 @@ describe('REST Authentication', () => {
   })
 
   it('rejects a presigned request with an invalid expiration [v4]', async () => {
-    // aws-sdk unfortunately doesn't expose a way to set the timestamp of the request to presign
-    // so we have to construct a mostly-valid request ourselves
+    // The SDK presigner does not expose the signing timestamp, so build a mostly-valid request here.
     let res
     try {
       res = await axios({
@@ -283,7 +289,7 @@ describe('REST Authentication', () => {
         Body: await fs.promises.readFile(require.resolve('../fixtures/image0.jpg')),
       })
       .promise()
-    const url = s3Client.getSignedUrl('getObject', {
+    const url = await s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'image',
       ResponseContentType: 'image/jpeg',
@@ -318,7 +324,7 @@ describe('REST Authentication', () => {
   })
 
   it('adds x-amz-meta-* metadata specified via query parameters', async () => {
-    const url = s3Client.getSignedUrl('putObject', {
+    const url = await s3Client.getSignedUrl('putObject', {
       Bucket: 'bucket-a',
       Key: 'mykey',
       Metadata: {
@@ -347,7 +353,7 @@ describe('REST Authentication', () => {
     )
 
     await s3Client.putObject({ Bucket: 'bucket-a', Key: 'text', Body: 'Hello!' }).promise()
-    const url = s3Client.getSignedUrl('getObject', {
+    const url = await s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'text',
     })
@@ -373,7 +379,7 @@ describe('REST Authentication', () => {
       s3ForcePathStyle: false,
       s3BucketEndpoint: true,
     })
-    const url = s3Client.getSignedUrl('getObject', {
+    const url = await s3Client.getSignedUrl('getObject', {
       Bucket: 'bucket-a',
       Key: 'text',
     })

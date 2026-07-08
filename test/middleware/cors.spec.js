@@ -1,4 +1,4 @@
-const AWS = require('../sdk-v2')
+const AWS = require('../sdk-v3')
 const fs = require('node:fs')
 const axios = require('axios')
 
@@ -125,7 +125,7 @@ describe('CORS Policy Tests', () => {
           ContentType: 'image/jpeg',
         })
         .promise()
-      const url = s3Client.getSignedUrl('getObject', {
+      const url = await s3Client.getSignedUrl('getObject', {
         Bucket: bucket.name,
         Key: 'image',
       })
@@ -161,7 +161,7 @@ describe('CORS Policy Tests', () => {
           ContentType: 'image/jpeg',
         })
         .promise()
-      const url = s3Client.getSignedUrl('getObject', {
+      const url = await s3Client.getSignedUrl('getObject', {
         Bucket: buckets[0].name,
         Key: 'image',
       })
@@ -197,7 +197,7 @@ describe('CORS Policy Tests', () => {
           ContentType: 'image/jpeg',
         })
         .promise()
-      const url = s3Client.getSignedUrl('getObject', {
+      const url = await s3Client.getSignedUrl('getObject', {
         Bucket: buckets[0].name,
         Key: 'image',
       })
@@ -233,7 +233,7 @@ describe('CORS Policy Tests', () => {
           ContentType: 'image/jpeg',
         })
         .promise()
-      const url = s3Client.getSignedUrl('getObject', {
+      const url = await s3Client.getSignedUrl('getObject', {
         Bucket: buckets[0].name,
         Key: 'image',
       })
@@ -269,7 +269,7 @@ describe('CORS Policy Tests', () => {
           ContentType: 'image/jpeg',
         })
         .promise()
-      const url = s3Client.getSignedUrl('getObject', {
+      const url = await s3Client.getSignedUrl('getObject', {
         Bucket: buckets[0].name,
         Key: 'image',
       })
@@ -299,7 +299,7 @@ describe('CORS Policy Tests', () => {
       sslEnabled: false,
       s3ForcePathStyle: true,
     })
-    const url = s3Client.getSignedUrl('getObject', {
+    const url = await s3Client.getSignedUrl('getObject', {
       Bucket: buckets[0].name,
       Key: 'image',
     })
@@ -333,7 +333,7 @@ describe('CORS Policy Tests', () => {
       sslEnabled: false,
       s3ForcePathStyle: true,
     })
-    const url = s3Client.getSignedUrl('getObject', {
+    const url = await s3Client.getSignedUrl('getObject', {
       Bucket: buckets[0].name,
       Key: 'image',
     })
@@ -370,7 +370,7 @@ describe('CORS Policy Tests', () => {
       sslEnabled: false,
       s3ForcePathStyle: true,
     })
-    const url = s3Client.getSignedUrl('getObject', {
+    const url = await s3Client.getSignedUrl('getObject', {
       Bucket: bucket.name,
       Key: 'image',
     })
@@ -405,7 +405,7 @@ describe('CORS Policy Tests', () => {
       sslEnabled: false,
       s3ForcePathStyle: true,
     })
-    const url = s3Client.getSignedUrl('getObject', {
+    const url = await s3Client.getSignedUrl('getObject', {
       Bucket: buckets[0].name,
       Key: 'image',
     })
