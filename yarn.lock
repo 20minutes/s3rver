@@ -1054,16 +1054,16 @@ fast-xml-builder@^1.2.0:
     xml-naming "^0.1.0"
 
 fast-xml-parser@^5.9.3:
-  version "5.9.3"
-  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-5.9.3.tgz#9db7a6dba7ac6f8dc1ee924d69547b2d4750d60c"
-  integrity sha512-brCNCeScma/kqa54J4PIDriSSSLssRkuYaUCpvHJulGc3HGI/xxKUCTDcYkAdqJsyb//ydpbxecjC3hB9+tb/g==
+  version "5.10.0"
+  resolved "https://registry.yarnpkg.com/fast-xml-parser/-/fast-xml-parser-5.10.0.tgz#8d08abfe4d6c51e9c5b51f417b994858dbedb4d7"
+  integrity sha512-SLhnTEqE5QpJHq/6zl9bsmImEP2adv+y6Wy+cJa7nVTRzQh1OZfCe9k29M5xN74LWnu0xa1zrUrq3KnOKl92Fg==
   dependencies:
     "@nodable/entities" "^2.2.0"
     fast-xml-builder "^1.2.0"
-    is-unsafe "^1.0.1"
-    path-expression-matcher "^1.5.0"
+    is-unsafe "^2.0.0"
+    path-expression-matcher "^1.6.2"
     strnum "^2.4.1"
-    xml-naming "^0.1.0"
+    xml-naming "^0.3.0"
 
 fdir@^6.5.0:
   version "6.5.0"
@@ -1271,10 +1271,10 @@ is-stream@^2.0.0:
   resolved "https://registry.yarnpkg.com/is-stream/-/is-stream-2.0.1.tgz#fac1e3d53b97ad5a9d0ae9cef2389f5810a5c077"
   integrity sha512-hFoiJiTl63nn+kstHGBtewWSKnQLpyb155KHheA1l39uvtO9nWIop1p3udqPcUd/xbF1VLMO4n7OI6p7RbngDg==
 
-is-unsafe@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/is-unsafe/-/is-unsafe-1.0.1.tgz#ce89b55dec0034364f5beda41e10481efa8fa317"
-  integrity sha512-CLK2+VdgERgD96EYm5lUQssZYlRg2tkZnbsxZoacmSiRxiFJ4Nk4SzjCl+Ur+v3kXIY9dTIdb3IH22y1mZ56LA==
+is-unsafe@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/is-unsafe/-/is-unsafe-2.0.0.tgz#c0dce4e06742662dde26360160e414ea487da2e9"
+  integrity sha512-2LdV822R+wmI86unXA93WCFpL6g+av8ynWk0nrHyJqGop5VoocYsSLFgN8jrfalT6iGeLNM4KXuVSsULP53kEA==
 
 istanbul-lib-coverage@^3.0.0, istanbul-lib-coverage@^3.2.2:
   version "3.2.2"
@@ -1574,7 +1574,7 @@ passthrough-counter@^1.0.0:
   resolved "https://registry.yarnpkg.com/passthrough-counter/-/passthrough-counter-1.0.0.tgz#1967d9e66da572b5c023c787db112a387ab166fa"
   integrity sha512-Wy8PXTLqPAN0oEgBrlnsXPMww3SYJ44tQ8aVrGAI4h4JZYCS0oYqsPqtPR8OhJpv6qFbpbB7XAn0liKV7EXubA==
 
-path-expression-matcher@^1.5.0:
+path-expression-matcher@^1.5.0, path-expression-matcher@^1.6.2:
   version "1.6.2"
   resolved "https://registry.yarnpkg.com/path-expression-matcher/-/path-expression-matcher-1.6.2.tgz#567c73c07197e9dcef24e90edcdc571056599168"
   integrity sha512-enSlaiat05iasnzmgNxRj8reFdj3puY2QpNgP1aPIaVfT6nn9ICuPoFlKHk8EN22HcwewshO+mN2DGbkCEOtqQ==
@@ -2005,3 +2005,8 @@ xml-naming@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/xml-naming/-/xml-naming-0.1.0.tgz#8ab7106c5b8d23caa2fabac1cadf17136379fbd8"
   integrity sha512-k8KO9hrMyNk6tUWqUfkTEZbezRRpONVOzUTnc97VnCvyj6Tf9lyUR9EDAIeiVLv56jsMcoXEwjW8Kv5yPY52lw==
+
+xml-naming@^0.3.0:
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/xml-naming/-/xml-naming-0.3.0.tgz#46c1e18bfe2858479982dd2accf34d16e749eda2"
+  integrity sha512-ghig2TBE/H11aOVgmahA3MhimvkBr6JIYknH/Dhdk10nXwdbIqBJsbfMxpvFPG8bAw77gN29aQWvKpmVoPlvPQ==
